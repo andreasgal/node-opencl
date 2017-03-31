@@ -7,6 +7,22 @@
 
 namespace opencl {
 
+static void CreateUserEvent(cl_command_queue q, Local<Value> arg, cl_event& event) {
+  cl_context ctx = nullptr;
+  cl_int err;
+  if (arg->IsBoolean() && arg->BooleanValue()) {
+    err = ::clGetCommandQueueInfo(q, CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
+    CHECK_ERR(err);
+  }
+  if (arg->IsObject() && !arg->IsNull()) {
+    NOCL_UNWRAP(ctx, NoCLContext, arg);
+  }
+  if (ctx) {
+    event = ::clCreateUserEvent(ctx, &err);
+    CHECK_ERR(err);
+  }
+}
+
 #ifndef CL_VERSION_2_0
 
 // /* Command Queue APIs */
@@ -245,17 +261,9 @@ NAN_METHOD(EnqueueReadBuffer) {
     NOCL_TO_ARRAY(cl_events, js_events, NoCLEvent);
   }
 
-  //::clGetCommandQueueInfo(q->getRaw(),param_name,sizeof(cl_context), &val, nullptr)
   cl_event event=nullptr;
-  if(ARG_EXISTS(7) && info[7]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(7))
+    CreateUserEvent(q->getRaw(), info[7], event);
 
   CHECK_ERR(::clEnqueueReadBuffer(
     q->getRaw(),buffer->getRaw(),blocking_read,offset,size,ptr,
@@ -336,15 +344,8 @@ NAN_METHOD(EnqueueReadBufferRect) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(12) && info[12]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(12))
+    CreateUserEvent(q->getRaw(), info[12], event);
 
   CHECK_ERR(::clEnqueueReadBufferRect(
     q->getRaw(),buffer->getRaw(),blocking_read,buffer_offset,host_offset,region,
@@ -403,15 +404,8 @@ NAN_METHOD(EnqueueWriteBuffer) {
 
   }
   cl_event event=nullptr;
-  if(ARG_EXISTS(7) && info[7]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(7))
+    CreateUserEvent(q->getRaw(), info[7], event);
 
   CHECK_ERR(::clEnqueueWriteBuffer(
     q->getRaw(),buffer->getRaw(),blocking_write,offset,size,ptr,
@@ -489,17 +483,9 @@ NAN_METHOD(EnqueueWriteBufferRect) {
     NOCL_TO_ARRAY(cl_events, js_events, NoCLEvent);
   }
 
-
   cl_event event=nullptr;
-  if(ARG_EXISTS(12) && info[12]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(12))
+    CreateUserEvent(q->getRaw(), info[12], event);
 
   CHECK_ERR(::clEnqueueWriteBufferRect(
     q->getRaw(),buffer->getRaw(),blocking_write,buffer_offset,host_offset,region,
@@ -567,15 +553,8 @@ NAN_METHOD(EnqueueFillBuffer) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(6) && info[6]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(6))
+    CreateUserEvent(q->getRaw(), info[6], event);
 
   CHECK_ERR(::clEnqueueFillBuffer(
     q->getRaw(), buffer->getRaw(), pattern, len, offset, size,
@@ -625,15 +604,8 @@ NAN_METHOD(EnqueueCopyBuffer) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(7) && info[7]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(7))
+    CreateUserEvent(q->getRaw(), info[7], event);
 
   CHECK_ERR(::clEnqueueCopyBuffer(q->getRaw(),
     src_buffer->getRaw(),dst_buffer->getRaw(),src_offset,dst_offset, size,
@@ -693,15 +665,8 @@ NAN_METHOD(EnqueueCopyBufferRect) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(11) && info[11]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(11))
+    CreateUserEvent(q->getRaw(), info[11], event);
 
   CHECK_ERR(::clEnqueueCopyBufferRect(
     q->getRaw(),src_buffer->getRaw(),dst_buffer->getRaw(),
@@ -773,15 +738,8 @@ NAN_METHOD(EnqueueReadImage) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(9) && info[9]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(9))
+    CreateUserEvent(q->getRaw(), info[9], event);
 
   CHECK_ERR(::clEnqueueReadImage(q->getRaw(),image->getRaw(),blocking_read,
     origin,region,row_pitch,slice_pitch, ptr,
@@ -851,15 +809,8 @@ NAN_METHOD(EnqueueWriteImage) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(9) && info[9]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(9))
+    CreateUserEvent(q->getRaw(), info[9], event);
 
   CHECK_ERR(::clEnqueueWriteImage(q->getRaw(),image->getRaw(),blocking_write,
     origin,region,row_pitch,slice_pitch, ptr,
@@ -919,15 +870,8 @@ NAN_METHOD(EnqueueFillImage) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(6) && info[6]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(6))
+    CreateUserEvent(q->getRaw(), info[6], event);
 
   CHECK_ERR(::clEnqueueFillImage(
     q->getRaw(),image->getRaw(),fill_color,
@@ -986,15 +930,8 @@ NAN_METHOD(EnqueueCopyImage) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(7) && info[7]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(7))
+    CreateUserEvent(q->getRaw(), info[7], event);
 
   CHECK_ERR(::clEnqueueCopyImage(
     q->getRaw(),src_image->getRaw(),dst_image->getRaw(),
@@ -1051,15 +988,8 @@ NAN_METHOD(EnqueueCopyImageToBuffer) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(7) && info[7]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(7))
+    CreateUserEvent(q->getRaw(), info[7], event);
 
   CHECK_ERR(::clEnqueueCopyImageToBuffer(
     q->getRaw(),src_image->getRaw(),dst_buffer->getRaw(),
@@ -1117,15 +1047,8 @@ NAN_METHOD(EnqueueCopyBufferToImage) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(7) && info[7]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(7))
+    CreateUserEvent(q->getRaw(), info[7], event);
 
   CHECK_ERR(::clEnqueueCopyBufferToImage(
     q->getRaw(),src_buffer->getRaw(),dst_image->getRaw(),
@@ -1405,15 +1328,8 @@ NAN_METHOD(EnqueueMigrateMemObjects) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(4) && info[4]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(4))
+    CreateUserEvent(q->getRaw(), info[4], event);
 
   CHECK_ERR(::clEnqueueMigrateMemObjects(
     q->getRaw(),num_mem_objects,
@@ -1500,15 +1416,8 @@ NAN_METHOD(EnqueueNDRangeKernel) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(7) && info[7]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(7))
+    CreateUserEvent(q->getRaw(), info[7], event);
 
   CHECK_ERR(::clEnqueueNDRangeKernel(
     q->getRaw(),
@@ -1554,15 +1463,8 @@ NAN_METHOD(EnqueueTask) {
   }
 
   cl_event event=nullptr;
-  if(ARG_EXISTS(3) && info[3]->BooleanValue()) {
-    cl_context ctx;
-    cl_int err = 0;
-    err = ::clGetCommandQueueInfo(q->getRaw(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ctx, NULL);
-    CHECK_ERR(err);
-
-    event = ::clCreateUserEvent(ctx, &err);
-    CHECK_ERR(err);
-  }
+  if (ARG_EXISTS(3))
+    CreateUserEvent(q->getRaw(), info[3], event);
 
   CHECK_ERR(::clEnqueueTask(
     q->getRaw(),k->getRaw(),
